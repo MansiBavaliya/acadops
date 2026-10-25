@@ -1,0 +1,1240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AcadOps - Academic Planning Assistant</title>
+
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --primary-dark: #3730a3;
+            --bg: #f4f6fb;
+            --surface: #ffffff;
+            --text: #1f2937;
+            --muted: #64748b;
+            --border: #e2e8f0;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            font-family: Arial, Helvetica, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        header {
+            background: var(--surface);
+            padding: 20px 5%;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        header h1 { margin: 0; color: var(--primary); }
+        header p { margin: 4px 0 0; color: var(--muted); }
+
+        main {
+            width: 92%;
+            max-width: 1200px;
+            margin: 28px auto;
+        }
+
+        .section-card, .chat-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 22px;
+            margin-bottom: 22px;
+            box-shadow: 0 4px 14px rgba(15, 23, 42, .04);
+        }
+
+        h2 { margin: 0 0 16px; font-size: 21px; }
+        h3 { margin-top: 20px; }
+        .muted { color: var(--muted); }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            padding: 18px;
+            background: #f8fafc;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            overflow-wrap: anywhere;
+        }
+
+        .stat-card p { margin: 0 0 8px; color: var(--muted); }
+        .stat-card strong { font-size: 25px; }
+
+        .decision {
+            padding: 16px;
+            background: #eef2ff;
+            border-left: 5px solid var(--primary);
+            border-radius: 8px;
+            overflow-wrap: anywhere;
+        }
+
+        .risk-list, .task-list { padding-left: 22px; }
+        .risk-list li, .task-list li { margin: 12px 0; }
+
+        .badge {
+            display: inline-block;
+            padding: 3px 9px;
+            border-radius: 20px;
+            background: #e2e8f0;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        button {
+            font: inherit;
+            font-weight: bold;
+            padding: 11px 16px;
+            border: none;
+            border-radius: 8px;
+            background: var(--primary);
+            color: white;
+            cursor: pointer;
+        }
+
+        button:hover { background: var(--primary-dark); }
+        button:disabled { opacity: .6; cursor: not-allowed; }
+
+        .plan-details {
+            padding: 16px;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            background: #f8fafc;
+            overflow-wrap: anywhere;
+        }
+
+        .plan-item {
+            padding: 14px;
+            margin: 12px 0;
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 9px;
+        }
+
+        .plan-hours {
+            display: inline-block;
+            padding: 3px 9px;
+            border-radius: 6px;
+            background: #e0e7ff;
+            color: #3730a3;
+            font-weight: bold;
+        }
+
+        .plan-item p { margin: 8px 0 0; }
+
+        .chat-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 18px;
+        }
+
+        .chat-header h2 { margin: 0; }
+        .chat-header p { margin: 4px 0 0; color: var(--muted); }
+
+        .chat-avatar {
+            width: 76px;
+            height: 76px;
+            flex-shrink: 0;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #dbeafe, #ede9fe);
+            animation: robotFloat 3s ease-in-out infinite;
+            transition: box-shadow .3s ease;
+        }
+
+        .robot-antenna {
+            position: absolute;
+            top: 5px;
+            left: 36px;
+            width: 4px;
+            height: 13px;
+            background: #64748b;
+            border-radius: 4px;
+        }
+
+        .robot-antenna::before {
+            content: "";
+            position: absolute;
+            top: -5px;
+            left: -3px;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #8b5cf6;
+        }
+
+        .robot-head {
+            position: relative;
+            width: 53px;
+            height: 43px;
+            margin-top: 12px;
+            border: 3px solid #64748b;
+            border-radius: 15px;
+            background: white;
+            box-shadow: 0 4px 0 #cbd5e1;
+        }
+
+        .robot-eyes {
+            display: flex;
+            justify-content: center;
+            gap: 13px;
+            padding-top: 10px;
+        }
+
+        .robot-eyes span {
+            width: 7px;
+            height: 9px;
+            background: #2563eb;
+            border-radius: 50%;
+            animation: robotBlink 4s infinite;
+        }
+
+        .robot-mouth {
+            width: 14px;
+            height: 4px;
+            margin: 6px auto 0;
+            background: #8b5cf6;
+            border-radius: 8px;
+        }
+
+        .robot-wave {
+            position: absolute;
+            right: -5px;
+            bottom: 3px;
+            font-size: 22px;
+            transform-origin: bottom center;
+            animation: robotWave 2s ease-in-out infinite;
+        }
+
+        .robot-avatar.listening {
+            box-shadow: 0 0 0 5px #93c5fd, 0 0 24px #60a5fa;
+        }
+
+        .robot-avatar.speaking {
+            box-shadow: 0 0 0 5px #c4b5fd, 0 0 24px #a78bfa;
+        }
+
+        .robot-avatar.speaking .robot-mouth {
+            animation: robotTalk .22s ease-in-out infinite alternate;
+        }
+
+        @keyframes robotFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+
+        @keyframes robotBlink {
+            0%, 45%, 48%, 100% { transform: scaleY(1); }
+            46%, 47% { transform: scaleY(.1); }
+        }
+
+        @keyframes robotWave {
+            0%, 100% { transform: rotate(0); }
+            50% { transform: rotate(20deg); }
+        }
+
+        @keyframes robotTalk {
+            from { width: 7px; height: 3px; }
+            to { width: 15px; height: 9px; }
+        }
+
+        .chat-messages {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            min-height: 160px;
+            max-height: 360px;
+            overflow-y: auto;
+            padding: 16px;
+            margin-bottom: 14px;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            background: #f8fafc;
+        }
+
+        .chat-message {
+            max-width: 88%;
+            padding: 12px 15px;
+            border-radius: 12px;
+            white-space: pre-wrap;
+            overflow-wrap: anywhere;
+        }
+
+        .assistant-message {
+            align-self: flex-start;
+            background: #e0e7ff;
+            color: #312e81;
+            border-bottom-left-radius: 3px;
+        }
+
+        .user-message {
+            align-self: flex-end;
+            background: var(--primary);
+            color: white;
+            border-bottom-right-radius: 3px;
+        }
+
+        .chat-form { display: flex; gap: 10px; }
+
+        .chat-form input {
+            flex: 1;
+            min-width: 0;
+            padding: 12px 14px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font: inherit;
+        }
+
+        .chat-form input:focus {
+            outline: 2px solid #c7d2fe;
+            border-color: var(--primary);
+        }
+
+        .quick-questions, .voice-controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 14px;
+        }
+
+        .quick-question {
+            background: #eef2ff;
+            color: #3730a3;
+            border: 1px solid #c7d2fe;
+            font-size: 13px;
+            padding: 8px 11px;
+        }
+
+        .quick-question:hover {
+            background: #dbeafe;
+            color: #312e81;
+        }
+
+        .chat-status {
+            min-height: 20px;
+            margin-top: 8px;
+            font-size: 13px;
+            color: var(--muted);
+        }
+
+        footer {
+            padding: 20px;
+            text-align: center;
+            color: var(--muted);
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .chat-avatar, .robot-wave, .robot-eyes span,
+            .robot-mouth { animation: none !important; }
+        }
+
+        @media (max-width: 600px) {
+            main { width: 94%; margin-top: 16px; }
+            .section-card, .chat-card { padding: 16px; }
+            .chat-form { flex-direction: column; }
+            .chat-form button { width: 100%; }
+            .chat-message { max-width: 96%; }
+        }
+
+
+        /* AcadOps visual refresh: styling only; Flask/Jinja routes and JS remain unchanged. */
+        :root {
+            --primary: #4f46e5;
+            --primary-dark: #3730a3;
+            --bg: #f3f5fb;
+            --surface: #ffffff;
+            --text: #1f2937;
+            --muted: #64748b;
+            --border: #dfe6f2;
+            --soft-indigo: #eef2ff;
+        }
+
+        body { line-height: 1.65; }
+        header {
+            position: relative;
+            padding: 24px max(4%, calc((100% - 1440px) / 2));
+            box-shadow: 0 2px 12px rgba(15, 23, 42, .035);
+        }
+        header h1 { font-size: clamp(28px, 3vw, 38px); letter-spacing: -.6px; }
+        header p { font-size: 16px; }
+        main { width: min(94%, 1440px); margin: 28px auto 36px; }
+        .section-card, .chat-card {
+            padding: clamp(18px, 2.2vw, 28px);
+            margin-bottom: 22px;
+            border-radius: 18px;
+            box-shadow: 0 5px 20px rgba(15, 23, 42, .045);
+            transition: box-shadow .2s ease, border-color .2s ease;
+        }
+        .section-card:hover, .chat-card:hover {
+            border-color: #d4ddf0;
+            box-shadow: 0 8px 26px rgba(15, 23, 42, .06);
+        }
+        h2 { font-size: clamp(19px, 2vw, 24px); letter-spacing: -.25px; }
+        h3 { margin-top: 24px; font-size: 18px; }
+        .decision {
+            padding: 20px;
+            background: linear-gradient(110deg, #eef2ff 0%, #f5f7ff 100%);
+            border-left-width: 5px;
+            border-radius: 12px;
+        }
+        .decision p:last-child { margin-bottom: 0; }
+        .stats-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+        .stat-card {
+            min-height: 118px;
+            padding: 20px;
+            border-radius: 13px;
+            background: #f8faff;
+        }
+        .stat-card strong { display: inline-block; margin-top: 2px; font-size: clamp(21px, 2.2vw, 28px); }
+        .badge { padding: 4px 10px; }
+        .risk-list, .task-list { padding-left: 24px; }
+        .risk-list li, .task-list li { margin: 14px 0; padding-left: 2px; }
+        .plan-details { padding: 20px; border-radius: 13px; }
+        .plan-item {
+            padding: 17px 18px;
+            margin: 14px 0;
+            border-radius: 12px;
+            box-shadow: 0 2px 7px rgba(15, 23, 42, .025);
+        }
+        button { border-radius: 10px; transition: transform .15s ease, background .15s ease; }
+        button:hover { transform: translateY(-1px); }
+        button:focus-visible, .chat-form input:focus-visible {
+            outline: 3px solid #c7d2fe;
+            outline-offset: 2px;
+        }
+        .chat-card { padding: clamp(18px, 2.2vw, 28px); }
+        .chat-header { gap: 18px; }
+        .chat-avatar { width: 84px; height: 84px; }
+        .robot-antenna { left: 40px; }
+        .chat-messages {
+            min-height: 190px;
+            max-height: 420px;
+            padding: 18px;
+            gap: 14px;
+            border-radius: 13px;
+        }
+        .chat-message { max-width: min(88%, 900px); padding: 13px 17px; line-height: 1.6; }
+        .chat-form { align-items: stretch; }
+        .chat-form input { min-height: 52px; border-radius: 10px; }
+        .chat-form button { min-width: 88px; }
+        .quick-question { border-radius: 9px; }
+        footer { padding: 26px 16px; font-size: 13px; }
+
+        @media (max-width: 760px) {
+            main { width: 94%; margin-top: 18px; }
+            header { padding: 18px 4%; }
+            .stats-grid { grid-template-columns: 1fr; }
+            .stat-card { min-height: 0; }
+            .chat-avatar { width: 66px; height: 66px; }
+            .robot-antenna { left: 31px; }
+            .chat-messages { max-height: 340px; }
+            .chat-message { max-width: 96%; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { scroll-behavior: auto !important; transition: none !important; }
+        }
+
+
+
+        /* Polished showcase theme — presentation-only CSS; application logic is unchanged. */
+        :root {
+            --primary: #5145e5;
+            --primary-dark: #3730a3;
+            --bg: #f4f6fc;
+            --surface: #ffffff;
+            --text: #182338;
+            --muted: #65748b;
+            --border: #e1e7f2;
+        }
+        html { scroll-behavior: smooth; }
+        body {
+            background:
+                radial-gradient(ellipse at 8% 0%, rgba(129,140,248,.13), transparent 32rem),
+                radial-gradient(ellipse at 96% 12%, rgba(56,189,248,.09), transparent 28rem),
+                var(--bg);
+            color: var(--text);
+            font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            letter-spacing: -.012em;
+        }
+        header {
+            background: rgba(255,255,255,.94);
+            border-bottom: 1px solid rgba(225,231,242,.9);
+            backdrop-filter: blur(14px);
+        }
+        header h1 {
+            background: linear-gradient(100deg, #4338ca, #6366f1 58%, #0891b2);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            font-weight: 850;
+        }
+        header p { font-size: 16px; }
+        main { max-width: 1320px; }
+        .section-card, .chat-card {
+            position: relative;
+            background: rgba(255,255,255,.97);
+            border: 1px solid rgba(221,229,242,.95);
+            border-radius: 20px;
+            box-shadow: 0 8px 28px rgba(31,45,81,.055), 0 1px 2px rgba(31,45,81,.025);
+            overflow: hidden;
+        }
+        .section-card:hover, .chat-card:hover {
+            transform: translateY(-2px);
+            border-color: #cbd5f4;
+            box-shadow: 0 14px 34px rgba(49,46,129,.09);
+        }
+        .section-card, .chat-card { transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease; }
+        h2 { color: #17233b; font-weight: 780; }
+        h3 { color: #273653; font-weight: 750; }
+        .decision {
+            position: relative;
+            border: 1px solid #dfe4ff;
+            border-left: 5px solid #5b50f0;
+            background: linear-gradient(115deg, #eef2ff 0%, #f6f7ff 65%, #f0f9ff 100%);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,.85);
+            padding: 22px 24px;
+        }
+        .decision strong { color: #292779; font-size: 1.08rem; }
+        .stats-grid { gap: 16px; }
+        .stat-card {
+            background: linear-gradient(145deg, #fbfcff, #f5f8ff);
+            border: 1px solid #e0e7f5;
+            border-radius: 16px;
+            box-shadow: 0 3px 10px rgba(33,53,93,.025);
+            transition: transform .18s ease, border-color .18s ease;
+        }
+        .stat-card:hover { transform: translateY(-2px); border-color: #c7d2fe; }
+        .stat-card p { color: #687790; }
+        .stat-card strong { color: #202d46; font-weight: 800; }
+        .badge { background: #eef2ff; color: #4338ca; border: 1px solid #dfe4ff; }
+        button {
+            background: linear-gradient(135deg, #5b50f0, #4938d5);
+            box-shadow: 0 4px 10px rgba(79,70,229,.16);
+        }
+        button:hover { background: linear-gradient(135deg, #4940d8, #3730a3); box-shadow: 0 7px 15px rgba(79,70,229,.22); }
+        .plan-details {
+            background: linear-gradient(145deg, #f8faff, #f5f8fd);
+            border-color: #dfe7f5;
+        }
+        .plan-item {
+            border-color: #e1e8f4;
+            box-shadow: 0 4px 13px rgba(25,42,78,.035);
+            transition: border-color .18s ease, transform .18s ease;
+        }
+        .plan-item:hover { border-color: #c7d2fe; transform: translateY(-1px); }
+        .plan-hours { background: #e8eaff; color: #3730a3; border-radius: 8px; }
+        .chat-avatar {
+            background: radial-gradient(circle at 30% 25%, #ffffff, #e4e9ff 58%, #d9d5ff);
+            box-shadow: 0 8px 22px rgba(99,102,241,.14);
+            border: 1px solid rgba(199,210,254,.8);
+        }
+        .chat-messages {
+            background: linear-gradient(145deg, #f8faff, #f5f8fd);
+            border-color: #e0e7f5;
+            scrollbar-color: #c4cbe0 transparent;
+        }
+        .assistant-message {
+            background: linear-gradient(120deg, #e8edff, #e5eaff);
+            color: #30357f;
+            border: 1px solid #dce3ff;
+        }
+        .user-message {
+            background: linear-gradient(135deg, #5b50f0, #4f46e5);
+            box-shadow: 0 4px 12px rgba(79,70,229,.12);
+        }
+        .chat-form input {
+            background: #fff;
+            border-color: #d7dfef;
+            box-shadow: 0 2px 5px rgba(20,35,65,.02);
+        }
+        .quick-question {
+            background: #f1f3ff;
+            color: #4338ca;
+            border-color: #d8ddff;
+            box-shadow: none;
+        }
+        .quick-question:hover { background: #e5e9ff; color: #312e81; }
+        .chat-status { color: #64748b; }
+        footer { color: #74819a; }
+        @media (max-width: 760px) {
+            .section-card, .chat-card { border-radius: 15px; }
+            .decision { padding: 17px; }
+            header .badge { margin-top: 4px; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            html { scroll-behavior: auto; }
+            .section-card, .chat-card, .stat-card, .plan-item { transition: none !important; }
+        }
+
+    </style>
+</head>
+
+<body>
+<header>
+    <div>
+        <h1>🎓 AcadOps</h1>
+        <p>Your personal academic planning assistant</p>
+    </div>
+    <span class="badge">Academic Dashboard</span>
+</header>
+
+<main>
+    <!-- NEXT BEST ACTION -->
+    <section class="section-card">
+        <h2>🎯 Next Best Action</h2>
+        <div class="decision">
+            {% if decision is mapping %}
+                <strong>
+                    {{ decision.get('next_action',
+                       decision.get('task', 'Review your academic tasks')) }}
+                </strong>
+
+                {% if decision.get('reason') %}
+                    <p>{{ decision.get('reason') }}</p>
+                {% endif %}
+
+                {% if decision.get('estimated_hours') is not none %}
+                    <p>Suggested study time: {{ decision.get('estimated_hours') }} hours</p>
+                {% endif %}
+
+                {% if decision.get('remaining_hours') is not none %}
+                    <p>Remaining work: {{ decision.get('remaining_hours') }} hours</p>
+                {% endif %}
+            {% elif decision %}
+                <strong>{{ decision }}</strong>
+            {% else %}
+                Your next academic action will appear here.
+            {% endif %}
+        </div>
+    </section>
+
+    <!-- ACADEMIC RISK -->
+    <section class="section-card">
+        <h2>📊 Academic Risk</h2>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <p>Workload Risk</p>
+                <strong>
+                    {% if workload is mapping %}
+                        {{ workload.get('level', 'Not available') }}
+                    {% else %}
+                        Not available
+                    {% endif %}
+                </strong>
+
+                {% if workload is mapping and workload.get('score') is not none %}
+                    <p class="muted">Risk score: {{ workload.get('score') }}/100</p>
+                {% endif %}
+            </div>
+
+            <div class="stat-card">
+                <p>Available Study Hours Today</p>
+                <strong>{{ available_hours }} hours</strong>
+            </div>
+
+            <div class="stat-card">
+                <p>Total Remaining Workload</p>
+                <strong>
+                    {% if workload is mapping %}
+                        {{ workload.get('total_workload_hours', 'N/A') }} hours
+                    {% else %}
+                        N/A
+                    {% endif %}
+                </strong>
+            </div>
+        </div>
+
+        <p class="muted">
+            {% if workload is mapping %}
+                {{ workload.get('message',
+                   'Workload risk is based on remaining tasks and available study time.') }}
+            {% else %}
+                Workload risk is based on remaining tasks and available study time.
+            {% endif %}
+        </p>
+    </section>
+
+    <!-- DEADLINE RISKS -->
+    <section class="section-card">
+        <h2>🚨 Deadline Risks</h2>
+
+        {% if deadline_risks %}
+            <ul class="risk-list">
+                {% for risk in deadline_risks %}
+                    <li>
+                        {% if risk is mapping %}
+                            <strong>
+                                {{ risk.get('task',
+                                   risk.get('task_name', 'Academic Task')) }}
+                            </strong><br>
+                            {{ risk.get('message',
+                               risk.get('reason',
+                               risk.get('risk',
+                               risk.get('status', 'Risk identified')))) }}
+                        {% else %}
+                            {{ risk }}
+                        {% endif %}
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p class="muted">No deadline risks are available.</p>
+        {% endif %}
+    </section>
+
+    <!-- TIME CONFLICTS -->
+    <section class="section-card">
+        <h2>⚠️ Time Conflicts</h2>
+
+        {% if conflicts %}
+            <ul class="risk-list">
+                {% for conflict in conflicts %}
+                    <li>
+                        {% if conflict is mapping %}
+                            <strong>
+                                {{ conflict.get('task',
+                                   conflict.get('task_name', 'Task conflict')) }}
+                            </strong><br>
+                            {{ conflict.get('message',
+                               conflict.get('description',
+                               conflict.get('reason',
+                               'A scheduling conflict was identified.'))) }}
+                        {% else %}
+                            {{ conflict }}
+                        {% endif %}
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p class="muted">No time conflicts are available.</p>
+        {% endif %}
+    </section>
+
+    <!-- TASK LIST -->
+    <section class="section-card">
+        <h2>📚 My Academic Tasks</h2>
+        <p class="muted">Review your tasks, deadlines, and completion progress.</p>
+        <p><strong>Available study time today:</strong> {{ available_hours }} hours</p>
+
+        {% if tasks %}
+            <ul class="task-list">
+                {% for task in tasks %}
+                    <li>
+                        {% if task is mapping %}
+                            <strong>
+                                {{ task.get('title',
+                                   task.get('task_name',
+                                   task.get('name', 'Academic Task'))) }}
+                            </strong>
+
+                            {% if task.get('deadline') %}
+                                <br><span class="muted">
+                                    Deadline: {{ task.get('deadline') }}
+                                </span>
+                            {% endif %}
+
+                            {% if task.get('estimated_hours') is not none %}
+                                <br>Estimated time: {{ task.get('estimated_hours') }} hours
+                            {% endif %}
+
+                            {% if task.get('progress') is not none %}
+                                <br>Progress: {{ task.get('progress') }}%
+                            {% elif task.get('completion_percentage') is not none %}
+                                <br>Progress: {{ task.get('completion_percentage') }}%
+                            {% endif %}
+
+                            {% if task.get('status') %}
+                                <br>Status: <span class="badge">{{ task.get('status') }}</span>
+                            {% endif %}
+                        {% else %}
+                            {{ task }}
+                        {% endif %}
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p class="muted">No active academic tasks were returned.</p>
+        {% endif %}
+    </section>
+
+    <!-- CHAT AND VOICE ASSISTANT -->
+    <section class="chat-card">
+        <div class="chat-header">
+            <div class="chat-avatar robot-avatar" id="acadopsRobot"
+                 role="img" aria-label="Animated AcadOps robot assistant">
+                <div class="robot-antenna"></div>
+                <div class="robot-head">
+                    <div class="robot-eyes"><span></span><span></span></div>
+                    <div class="robot-mouth" id="robotMouth"></div>
+                </div>
+                <div class="robot-wave">👋</div>
+            </div>
+
+            <div>
+                <h2>Ask AcadOps</h2>
+                <p>Your personal academic planning assistant</p>
+            </div>
+        </div>
+
+        <div id="chatMessages" class="chat-messages" role="log" aria-live="polite">
+            <div class="chat-message assistant-message">
+                Hello! 👋 I'm AcadOps. Ask me about your next task, deadlines,
+                workload, conflicts, or task progress. You can type or use your voice.
+            </div>
+        </div>
+
+        <form id="chatForm" class="chat-form">
+            <input type="text" id="chatInput" name="message"
+                   placeholder="Ask about your tasks or deadlines..."
+                   autocomplete="off" aria-label="Type your question" required>
+            <button type="submit" id="chatSend">Send</button>
+        </form>
+
+        <div class="voice-controls">
+            <button type="button" id="voiceButton">🎤 Talk to AcadOps</button>
+            <button type="button" id="stopVoiceButton" class="quick-question">
+                🔇 Stop speaking
+            </button>
+        </div>
+
+        <div class="quick-questions">
+            <button type="button" class="quick-question">What should I do next?</button>
+            <button type="button" class="quick-question">Which tasks are overdue?</button>
+            <button type="button" class="quick-question">Show my workload</button>
+            <button type="button" class="quick-question">Show my task progress</button>
+        </div>
+
+        <div id="chatStatus" class="chat-status" aria-live="polite">Ready</div>
+    </section>
+
+    <!-- ADAPTIVE REPLANNING -->
+    <section class="section-card">
+        <h2>🔄 Adaptive Replanning</h2>
+        <p>Generate an updated academic plan using your current tasks and study availability.</p>
+
+        <form action="{{ url_for('replan') }}" method="POST">
+            <button type="submit">Generate Updated Study Plan</button>
+        </form>
+    </section>
+
+    <!-- LATEST SAVED PLAN -->
+    <section class="section-card">
+        <h2>📅 Latest Saved Study Plan</h2>
+        <p class="muted">Your latest academic workload and study recommendations.</p>
+
+        {% if saved_plan %}
+            {% set plan_data = saved_plan.get('plan', {}) %}
+
+            <div class="plan-details">
+                <p><strong>Plan ID:</strong>
+                    {{ saved_plan.get('id', saved_plan.get('plan_id', 'Available')) }}
+                </p>
+
+                {% if plan_data is mapping %}
+
+                    {% if plan_data.get('status') %}
+                        <p><strong>Status:</strong> {{ plan_data.get('status') }}</p>
+                    {% endif %}
+
+                    {% if plan_data.get('available_hours') is not none %}
+                        <p><strong>Available study hours:</strong>
+                            {{ plan_data.get('available_hours') }} hours
+                        </p>
+                    {% endif %}
+
+                    {% set risk = plan_data.get('risk_analysis', {}) %}
+
+                    {% if risk is mapping %}
+                        {% if risk.get('total_workload_hours') is not none %}
+                            <p><strong>Total remaining workload:</strong>
+                                {{ risk.get('total_workload_hours') }} hours
+                            </p>
+                        {% endif %}
+
+                        {% if risk.get('available_hours') is not none %}
+                            <p><strong>Daily capacity:</strong>
+                                {{ risk.get('available_hours') }} hours
+                            </p>
+                        {% endif %}
+
+                        {% if risk.get('level') %}
+                            <p><strong>Workload risk:</strong>
+                                <span class="badge">{{ risk.get('level') }}</span>
+                            </p>
+                        {% endif %}
+
+                        {% if risk.get('score') is not none %}
+                            <p><strong>Risk score:</strong>
+                                {{ risk.get('score') }}/100
+                            </p>
+                        {% endif %}
+
+                        {% if risk.get('message') %}
+                            <p class="muted">{{ risk.get('message') }}</p>
+                        {% endif %}
+                    {% endif %}
+
+                    {% set next_action = plan_data.get('next_best_action', {}) %}
+
+                    {% if next_action %}
+                        <h3>Recommended next action</h3>
+
+                        {% if next_action is mapping %}
+                            <div class="plan-item">
+                                <strong>
+                                    {{ next_action.get('next_action',
+                                       next_action.get('task', 'Review your tasks')) }}
+                                </strong>
+
+                                {% if next_action.get('remaining_hours') is not none %}
+                                    <p>Remaining work:
+                                        {{ next_action.get('remaining_hours') }} hours
+                                    </p>
+                                {% endif %}
+
+                                {% if next_action.get('reason') %}
+                                    <p class="muted">{{ next_action.get('reason') }}</p>
+                                {% endif %}
+
+                                {% if next_action.get('deadline') %}
+                                    <p>Deadline: {{ next_action.get('deadline') }}</p>
+                                {% endif %}
+
+                                {% if next_action.get('estimated_hours') is not none %}
+                                    <p>Estimated time:
+                                        {{ next_action.get('estimated_hours') }} hours
+                                    </p>
+                                {% endif %}
+
+                                {% if next_action.get('urgency_score') is not none %}
+                                    <p>Urgency score:
+                                        {{ next_action.get('urgency_score') }}
+                                    </p>
+                                {% endif %}
+                            </div>
+                        {% else %}
+                            <p>{{ next_action }}</p>
+                        {% endif %}
+                    {% endif %}
+
+                    {% set saved_conflicts = plan_data.get('conflicts', []) %}
+
+                    {% if saved_conflicts %}
+                        <h3>Conflicts to review</h3>
+
+                        <ul class="risk-list">
+                            {% for conflict in saved_conflicts %}
+                                <li>
+                                    {% if conflict is mapping %}
+                                        <strong>
+                                            {{ conflict.get('task',
+                                               conflict.get('task_name', 'Academic task')) }}
+                                        </strong>
+
+                                        {% if conflict.get('deadline') %}
+                                            <br>Deadline: {{ conflict.get('deadline') }}
+                                        {% endif %}
+
+                                        {% if conflict.get('remaining_hours') is not none %}
+                                            <br>Remaining work:
+                                            {{ conflict.get('remaining_hours') }} hours
+                                        {% endif %}
+
+                                        {% if conflict.get('message') %}
+                                            <br>{{ conflict.get('message') }}
+                                        {% elif conflict.get('reason') %}
+                                            <br>{{ conflict.get('reason') }}
+                                        {% endif %}
+                                    {% else %}
+                                        {{ conflict }}
+                                    {% endif %}
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+
+                    {% set allocations = plan_data.get('plan', []) %}
+
+                    {% if allocations is mapping %}
+                        {% set allocations = allocations.get('allocations', []) %}
+                    {% endif %}
+
+                    {% if allocations %}
+                        <h3>Recommended allocations</h3>
+
+                        {% for item in allocations %}
+                            {% if item is mapping %}
+                                <div class="plan-item">
+                                    <strong>
+                                        {{ item.get('task',
+                                           item.get('title',
+                                           item.get('task_name', 'Academic task'))) }}
+                                    </strong>
+
+                                    {% set hours = item.get(
+                                        'estimated_hours',
+                                        item.get(
+                                            'allocated_hours',
+                                            item.get('hours', none)
+                                        )
+                                    ) %}
+
+                                    {% if hours is not none %}
+                                        <span class="plan-hours">{{ hours }}h</span>
+                                    {% else %}
+                                        <span class="plan-hours">Not specified</span>
+                                    {% endif %}
+
+                                    {% if item.get('action') %}
+                                        <p><strong>Action:</strong>
+                                            {{ item.get('action') }}
+                                        </p>
+                                    {% endif %}
+
+                                    {% if item.get('reason') %}
+                                        <p class="muted">{{ item.get('reason') }}</p>
+                                    {% endif %}
+
+                                    {% if item.get('remaining_work') is not none %}
+                                        <p class="muted">
+                                            Remaining work before session:
+                                            {{ item.get('remaining_work') }} hours
+                                        </p>
+                                    {% endif %}
+
+                                    {% if item.get('remaining_after_session') is not none %}
+                                        <p class="muted">
+                                            Remaining after session:
+                                            {{ item.get('remaining_after_session') }} hours
+                                        </p>
+                                    {% endif %}
+                                </div>
+                            {% else %}
+                                <div class="plan-item">{{ item }}</div>
+                            {% endif %}
+                        {% endfor %}
+                    {% else %}
+                        <p class="muted">
+                            No allocation items were found in this saved plan.
+                        </p>
+                    {% endif %}
+
+                {% else %}
+                    <p class="muted">
+                        The saved plan is not in the expected format.
+                    </p>
+                {% endif %}
+            </div>
+        {% else %}
+            <p class="muted">No saved study plan is available yet.</p>
+        {% endif %}
+    </section>
+</main>
+
+<footer>AcadOps — AI-powered academic planning and workload management.</footer>
+
+<script>
+    const chatForm = document.getElementById("chatForm");
+    const chatInput = document.getElementById("chatInput");
+    const chatMessages = document.getElementById("chatMessages");
+    const chatSend = document.getElementById("chatSend");
+    const chatStatus = document.getElementById("chatStatus");
+    const voiceButton = document.getElementById("voiceButton");
+    const stopVoiceButton = document.getElementById("stopVoiceButton");
+    const robotAvatar = document.getElementById("acadopsRobot");
+
+    const quickQuestions = document.querySelectorAll(
+        ".quick-questions .quick-question"
+    );
+
+    const SpeechRecognitionAPI =
+        window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    let recognition = null;
+    let isListening = false;
+
+    function addMessage(message, sender) {
+        const element = document.createElement("div");
+        element.classList.add("chat-message");
+        element.classList.add(
+            sender === "user" ? "user-message" : "assistant-message"
+        );
+        element.textContent = String(message);
+        chatMessages.appendChild(element);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    function stopSpeech() {
+        if ("speechSynthesis" in window) {
+            window.speechSynthesis.cancel();
+        }
+        robotAvatar.classList.remove("speaking");
+    }
+
+    function speakReply(message) {
+        if (!("speechSynthesis" in window) || !message) {
+            chatStatus.textContent = "Text reply ready; speech is unavailable.";
+            return;
+        }
+
+        stopSpeech();
+
+        const utterance = new SpeechSynthesisUtterance(String(message));
+        utterance.lang = "en-IN";
+        utterance.rate = 1;
+        utterance.pitch = 1;
+
+        utterance.onstart = () => {
+            robotAvatar.classList.add("speaking");
+            chatStatus.textContent = "AcadOps is speaking...";
+        };
+
+        utterance.onend = () => {
+            robotAvatar.classList.remove("speaking");
+            chatStatus.textContent = "Ready";
+        };
+
+        utterance.onerror = () => {
+            robotAvatar.classList.remove("speaking");
+            chatStatus.textContent = "Could not play the voice reply.";
+        };
+
+        window.speechSynthesis.speak(utterance);
+    }
+
+    async function sendMessage(message) {
+        const question = String(message || "").trim();
+
+        if (!question || chatSend.disabled) return;
+
+        addMessage(question, "user");
+        chatInput.value = "";
+        chatSend.disabled = true;
+        chatStatus.textContent = "AcadOps is thinking...";
+
+        try {
+            const response = await fetch("/chat", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ message: question })
+            });
+
+            const data = await response.json();
+
+            if (!response.ok || data.success === false) {
+                throw new Error(
+                    data.reply || "The request could not be completed."
+                );
+            }
+
+            const reply = data.reply || "I couldn't generate a response.";
+            addMessage(reply, "assistant");
+            speakReply(reply);
+        } catch (error) {
+            addMessage(
+                "Sorry, I couldn't connect to AcadOps. Check that the Flask server is running and try again.",
+                "assistant"
+            );
+            chatStatus.textContent = error.message || "Connection error.";
+        } finally {
+            chatSend.disabled = false;
+            chatInput.focus();
+        }
+    }
+
+    chatForm.addEventListener("submit", function (event) {
+        event.preventDefault();
+        sendMessage(chatInput.value);
+    });
+
+    quickQuestions.forEach(function (button) {
+        button.addEventListener("click", function () {
+            sendMessage(button.textContent);
+        });
+    });
+
+    voiceButton.addEventListener("click", function () {
+        if (!SpeechRecognitionAPI) {
+            chatStatus.textContent =
+                "Voice input is unsupported in this browser. Try the latest Chrome or Edge.";
+            return;
+        }
+
+        if (isListening) return;
+
+        stopSpeech();
+        recognition = new SpeechRecognitionAPI();
+        recognition.lang = "en-IN";
+        recognition.interimResults = false;
+        recognition.maxAlternatives = 1;
+
+        recognition.onstart = function () {
+            isListening = true;
+            robotAvatar.classList.add("listening");
+            voiceButton.textContent = "🎙️ Listening...";
+            chatStatus.textContent = "Listening. Ask AcadOps a question.";
+        };
+
+        recognition.onresult = function (event) {
+            const transcript = event.results[0][0].transcript.trim();
+            chatInput.value = transcript;
+            sendMessage(transcript);
+        };
+
+        recognition.onerror = function (event) {
+            const errors = {
+                "not-allowed": "Microphone access denied. Allow microphone access in your browser.",
+                "no-speech": "No speech detected. Please try again.",
+                "network": "Voice recognition needs a network connection."
+            };
+
+            chatStatus.textContent =
+                errors[event.error] || "Voice input error: " + event.error;
+        };
+
+        recognition.onend = function () {
+            isListening = false;
+            robotAvatar.classList.remove("listening");
+            voiceButton.textContent = "🎤 Talk to AcadOps";
+        };
+
+        try {
+            recognition.start();
+        } catch (error) {
+            chatStatus.textContent =
+                "Voice input could not start. Please try again.";
+        }
+    });
+
+    stopVoiceButton.addEventListener("click", function () {
+        stopSpeech();
+
+        if (recognition && isListening) {
+            recognition.stop();
+        }
+
+        chatStatus.textContent = "Voice playback stopped.";
+    });
+</script>
+</body>
+</html>
