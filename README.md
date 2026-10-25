@@ -154,6 +154,12 @@ The long-term vision is to build a dependable academic operations assistant that
 
 Developed as a student project exploring AI-assisted academic planning, modular decision systems, and MCP-based integration.
 
+## 🎥 Project Demo
+
+Watch AcadOps in action: [View the project demo](https://youtu.be/v8jxjOiO3Rw)
+
+See how AcadOps analyzes academic workload, identifies risks and conflicts, recommends the next best action, and generates adaptive study plans.
+
 ## 📄 License
 
 This project is licensed under the MIT License. See [`LICENSE`](LICENSE) for details.
